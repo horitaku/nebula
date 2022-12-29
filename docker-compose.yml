@@ -1,0 +1,48 @@
+version: '3'
+services:
+  ############################
+  # Nebula + Dapr sidecar
+  ############################
+  nebula:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+      - placement
+    networks:
+      - nebula-dapr-network
+  nebula-dapr:
+    image: "daprio/daprd:edge"
+    command: ["./daprd",
+              "-app-id", "nebula",
+              "-app-port", "3000",
+              "-placement-host-address", "placement:50006",
+              "-dapr-grpc-port", "50002",
+              "-components-path", "/components"]
+    volumes:
+      - "./dapr/components/:/components"
+    depends_on:
+      - nebula
+    network_mode: "service:nebula"
+  ############################
+  # Dapr placement service
+  ############################
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - "50006:50006"
+    networks:
+      - nebula-dapr-network
+  ############################
+  # Redis state store
+  ############################
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6380:6379"
+    networks:
+      - nebula-dapr-network
+networks:
+  nebula-dapr-network:
