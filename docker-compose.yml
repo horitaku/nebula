@@ -1,10 +1,10 @@
 version: '3'
 services:
   ############################
-  # Nebula + Dapr sidecar
+  # Nebula frontend + Dapr sidecar
   ############################
   nebula:
-    build: ./frontend
+    build: .
     ports:
       - "3000:3000"
     depends_on:
@@ -25,6 +25,10 @@ services:
     depends_on:
       - nebula
     network_mode: "service:nebula"
+
+
+
+
   ############################
   # Dapr placement service
   ############################
